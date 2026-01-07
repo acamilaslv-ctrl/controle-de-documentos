@@ -1,0 +1,313 @@
+<!DOCTYPE html> 
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Controle Interno – MPPA</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+    margin:0;
+    font-family: Arial, Helvetica, sans-serif;
+    background:#f4f6f9;
+    color:#1f2937;
+}
+
+header{
+    background:#ffffff;
+    border-bottom:4px solid #b11226;
+    padding:15px 30px;
+    display:flex;
+    align-items:center;
+    gap:20px;
+}
+
+header h1{
+    font-size:20px;
+    margin:0;
+    color:#1c2e4a;
+}
+
+nav{
+    background:#1c2e4a;
+    padding:10px 20px;
+    display:flex;
+    gap:10px;
+}
+
+nav button{
+    background:none;
+    border:none;
+    color:white;
+    font-size:14px;
+    padding:8px 14px;
+    cursor:pointer;
+}
+
+nav button.active{
+    background:#b11226;
+    border-radius:4px;
+}
+
+section{
+    display:none;
+    padding:25px;
+}
+
+section.active{
+    display:block;
+}
+
+.card{
+    background:white;
+    padding:20px;
+    border-radius:6px;
+    margin-bottom:25px;
+    box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+
+h2{
+    margin-top:0;
+    font-size:18px;
+    color:#1c2e4a;
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:15px;
+}
+
+label{
+    font-size:13px;
+    font-weight:bold;
+}
+
+input,select{
+    width:100%;
+    padding:8px;
+    margin-top:4px;
+}
+
+button.add{
+    margin-top:10px;
+    background:#1c2e4a;
+    color:white;
+    border:none;
+    padding:10px 16px;
+    cursor:pointer;
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+th{
+    background:#1c2e4a;
+    color:white;
+    font-size:13px;
+    padding:10px;
+}
+
+td{
+    padding:10px;
+    border-bottom:1px solid #ddd;
+    text-align:center;
+    cursor: pointer;
+}
+
+td.feito {
+    background-color: #4CAF50;
+    color: white;
+}
+
+/* Botão de excluir */
+button.delete {
+    background:#b11226;
+    color:white;
+    border:none;
+    padding:5px 8px;
+    cursor:pointer;
+    border-radius:4px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Controle Interno de Atividades</h1>
+</header>
+
+<nav>
+<button class="active" onclick="trocar('docs',this)">📄 Documentos</button>
+<button onclick="trocar('pend',this)">✍️ Pendências</button>
+<button onclick="trocar('ofic',this)">📤 Ofícios</button>
+</nav>
+
+<!-- DOCUMENTOS -->
+<section id="docs" class="active">
+<div class="card">
+<h2>Controle de Documentos e Prazos</h2>
+
+<div class="grid">
+<div>
+<label>Judicial / Extrajudicial</label>
+<select id="juridico">
+<option>Judicial</option>
+<option>Extrajudicial</option>
+</select>
+</div>
+
+<div>
+<label>Nº MP</label>
+<input id="numMp" placeholder="01.2026 / 09.2026">
+</div>
+
+<div>
+<label>Enviado para</label>
+<input id="destino">
+</div>
+
+<div>
+<label>Data de envio</label>
+<input type="date" id="dataDoc">
+</div>
+
+<div>
+<label>Prazo</label>
+<input type="date" id="prazo">
+</div>
+</div>
+
+<button class="add" onclick="addDoc()">Adicionar</button>
+</div>
+
+<div class="card">
+<table>
+<thead>
+<tr>
+<th>Judicial / Extrajudicial</th>
+<th>Nº MP</th>
+<th>Enviado para</th>
+<th>Data de envio</th>
+<th>Prazo</th>
+<th>Excluir</th>
+</tr>
+</thead>
+<tbody id="listaDocs"></tbody>
+</table>
+</div>
+</section>
+
+<!-- PENDÊNCIAS -->
+<section id="pend">
+<div class="card">
+<h2>Pendências para Assinatura</h2>
+
+<div class="grid">
+<div>
+<label>Tipo</label>
+<select id="tipoPend">
+<option>Despacho de Instauração</option>
+<option>Despacho de Prorrogação</option>
+<option>Despacho de Comunicação</option>
+<option>Portaria</option>
+<option>Ofício</option>
+<option>Notificação</option>
+</select>
+</div>
+
+<div>
+<label>Nº MP</label>
+<input id="mpPend">
+</div>
+
+<div>
+<label>Data</label>
+<input type="date" id="dataPend">
+</div>
+</div>
+
+<button class="add" onclick="addPend()">Adicionar</button>
+</div>
+
+<div class="card">
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Nº MP</th>
+<th>Data</th>
+<th>Excluir</th>
+</tr>
+</thead>
+<tbody id="listaPend"></tbody>
+</table>
+</div>
+</section>
+
+<!-- OFÍCIOS -->
+<section id="ofic">
+<div class="card">
+<h2>Controle Numérico de Ofícios</h2>
+<table id="tabelaOficios">
+<tbody id="oficios"></tbody>
+</table>
+</div>
+</section>
+
+<script>
+function trocar(id,btn){
+    document.querySelectorAll("section").forEach(s=>s.classList.remove("active"));
+    document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    btn.classList.add("active");
+}
+
+// Função para adicionar documento
+function addDoc(){
+    const tr = document.createElement('tr');
+    tr.innerHTML=`
+        <td>${juridico.value}</td>
+        <td>${numMp.value}</td>
+        <td>${destino.value}</td>
+        <td>${dataDoc.value}</td>
+        <td>${prazo.value}</td>
+        <td><button class="delete" onclick="this.parentElement.parentElement.remove()">Excluir</button></td>
+    `;
+    listaDocs.appendChild(tr);
+}
+
+// Função para adicionar pendência
+function addPend(){
+    const tr = document.createElement('tr');
+    tr.innerHTML=`
+        <td>${tipoPend.value}</td>
+        <td>${mpPend.value}</td>
+        <td>${dataPend.value}</td>
+        <td><button class="delete" onclick="this.parentElement.parentElement.remove()">Excluir</button></td>
+    `;
+    listaPend.appendChild(tr);
+}
+
+// Preenchimento automático de Ofícios com clique para marcar como feito
+const oficiosBody = document.getElementById('oficios');
+
+for (let i = 1; i <= 200; i += 20) {
+    let tr = document.createElement("tr");
+    for (let j = i; j < i + 20 && j <= 200; j++) {
+        let td = document.createElement("td");
+        td.textContent = j;
+        td.addEventListener("click", function() {
+            td.classList.toggle("feito"); // alterna feito / não feito
+        });
+        tr.appendChild(td);
+    }
+    oficiosBody.appendChild(tr);
+}
+</script>
+
+</body>
+</html>
